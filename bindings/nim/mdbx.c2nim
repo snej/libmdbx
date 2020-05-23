@@ -1,0 +1,77 @@
+// Definitions for c2nim to parse CouchbaseLite headers
+
+// To make the file shorter and easier to scan, don't add the comments
+#skipcomments
+
+#assumendef LIBMDBX_EXPORTS
+#assumendef LIBMDBX_IMPORTS
+
+#assumendef _WIN32
+#assumendef _WIN64
+#assumendef _MSC_VER
+#assumendef __CYGWIN__
+#assumendef __sun
+#assumendef __SVR4
+#assumendef __svr4__
+
+#assumendef MDBX_NEXENTA_ATTRS
+#assumendef __e2k__
+
+#assumendef __mode_t_defined
+#assumedef __has_attribute
+
+// c2nim should ignore these:
+#def LIBMDBX_API
+#def LIBMDBX_VERINFO_API
+#def __deprecated
+#def __dll_export
+#def __dll_import
+
+// Some C types & macros:
+#def UINT32_C(i)            ((uint32_t)i)
+#def UINT64_C(i)            i ## ULL
+#def INT32_MAX              0x7FFFFFFFi32
+#def va_list                void*
+#def intptr_t               size_t
+#def ptrdiff_t              long
+#def mode_t                 unsigned short
+#def mdbx_filehandle_t      int
+#def mdbx_pid_t             int
+#def mdbx_tid_t             void*
+
+//////// IDENTIFIER RENAMING:
+
+// strip function prefixes:
+#prefix mdbx_cursor_
+#prefix mdbx_dbi_
+#prefix mdbx_env_
+#prefix mdbx_limits_
+#prefix mdbx_txn_
+#prefix mdbx_
+
+// strip constant prefixes:
+#prefix MDBX_
+
+// strip struct member prefixes:
+#prefix txn_
+#prefix mi_
+#prefix ms_
+
+// Custom struct names:
+#mangle mdbx_version_info   VersionInfo
+#mangle mdbx_version        Version
+#mangle mdbx_build_info     BuildInfo
+#mangle mdbx_build          Build
+#mangle mdbx_canary         Canary
+#mangle MDBX_cursor_op      CursorOp
+#mangle mdbx_page_type_t    PageType
+#mangle mdbx_envinfo        EnvInfo
+#mangle MDBX_txn_info       TxnInfo
+
+// Custom handle type names:
+#mangle MDBX_cursor         Cursor
+#mangle MDBX_dbi            DBI
+#mangle MDBX_env            Env
+#mangle MDBX_stat           Stat
+#mangle MDBX_txn            Txn
+#mangle MDBX_val            Val

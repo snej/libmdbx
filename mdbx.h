@@ -651,6 +651,21 @@ typedef pthread_t mdbx_tid_t;
 #endif
 #endif /* __dll_import */
 
+#ifdef C2NIM
+/* Tell the Nim bindings generator what library to load at runtime */
+#  dynlib LibMDBX
+#  private LibMDBX
+#  cdecl
+#  if defined(windows)
+#    define LibMDBX "mdbx.dll"
+#  elif defined(macosx)
+#    define LibMDBX "libmdbx.dylib"
+#  else
+#    define LibMDBX "libmdbx.so"
+#  endif
+#endif
+
+
 /*----------------------------------------------------------------------------*/
 
 /* MDBX version 0.7.0, released 2020-03-18 */
@@ -684,7 +699,7 @@ typedef struct mdbx_version_info {
   uint8_t minor;
   uint16_t release;
   uint32_t revision;
-  struct /* source info from git */ {
+  struct { /* source info from git */
     const char *datetime /* committer date, strict ISO-8601 format */;
     const char *tree /* commit hash (hexadecimal digits) */;
     const char *commit /* tree hash, i.e. digest of the source code */;
@@ -754,6 +769,15 @@ void LIBMDBX_API NTAPI mdbx_dll_handler(PVOID module, DWORD reason,
 #endif /* Windows */
 
 /**** OPACITY STRUCTURES ******************************************************/
+
+#ifdef C2NIM
+/* Workarounds for some types that c2nim doesn't translate */
+struct MDBX_env;
+struct MDBX_txn;
+struct MDBX_cursor;
+typedef struct { void *base; size_t len; } MDBX_val;
+#assumedef HAVE_STRUCT_IOVEC
+#endif
 
 /* Opaque structure for a database environment.
  *
@@ -864,7 +888,11 @@ typedef void MDBX_debug_func(int loglevel, const char *function, int line,
 /* Don't change current settings */
 #define MDBX_LOG_DONTCHANGE (-1)
 #define MDBX_DBG_DONTCHANGE (-1)
+#ifdef C2NIM
+#define MDBX_LOGGER_DONTCHANGE ((MDBX_debug_func *)-1)
+#else
 #define MDBX_LOGGER_DONTCHANGE ((MDBX_debug_func *)(intptr_t)-1)
+#endif
 
 /* Setup global log-level, debug options and debug logger. */
 LIBMDBX_API int mdbx_setup_debug(int loglevel, int flags,
@@ -1470,10 +1498,12 @@ typedef enum MDBX_cursor_op {
 
 /* MDBX_MAP_RESIZED is deprecated.
  * Please review your code to use MDBX_UNABLE_EXTEND_MAPSIZE instead. */
+#ifndef C2NIM
 static __inline int __deprecated MDBX_MAP_RESIZED() {
   return MDBX_UNABLE_EXTEND_MAPSIZE;
 }
 #define MDBX_MAP_RESIZED MDBX_MAP_RESIZED()
+#endif
 
 /* Environment or database is not compatible with the requested operation
  * or the specified flags. This can mean:
@@ -2697,10 +2727,10 @@ LIBMDBX_API uint64_t mdbx_key_from_ptrdouble(const double *const ieee754_64bit);
 LIBMDBX_API uint32_t mdbx_key_from_float(const float ieee754_32bit);
 LIBMDBX_API uint32_t mdbx_key_from_ptrfloat(const float *const ieee754_32bit);
 __inline uint64_t mdbx_key_from_int64(const int64_t i64) {
-  return UINT64_C(0x8000000000000000) + i64;
+  return UINT64_C(0x8000000000000000) + (uint64_t)i64;
 }
 __inline uint32_t mdbx_key_from_int32(const int32_t i32) {
-  return UINT32_C(0x80000000) + i32;
+  return UINT32_C(0x80000000) + (uint32_t)i32;
 }
 
 /* Retrieve statistics for a database.
@@ -3295,7 +3325,11 @@ LIBMDBX_API int mdbx_estimate_move(const MDBX_cursor *cursor, MDBX_val *key,
  * [out] distance_items   A pointer to store range estimation result.
  *
  * Returns A non-zero error value on failure and 0 on success. */
+#ifdef C2NIM
+#define MDBX_EPSILON ((MDBX_val *)(-1))
+#else
 #define MDBX_EPSILON ((MDBX_val *)((ptrdiff_t)-1))
+#endif
 LIBMDBX_API int mdbx_estimate_range(MDBX_txn *txn, MDBX_dbi dbi,
                                     MDBX_val *begin_key, MDBX_val *begin_data,
                                     MDBX_val *end_key, MDBX_val *end_data,
@@ -3531,9 +3565,15 @@ typedef enum {
   MDBX_subpage_dupfixed_leaf
 } MDBX_page_type_t;
 
+#ifdef C2NIM
+#define MDBX_PGWALK_MAIN ((const char *)0)
+#define MDBX_PGWALK_GC ((const char *)-1)
+#define MDBX_PGWALK_META ((const char *)-2)
+#else
 #define MDBX_PGWALK_MAIN ((const char *)((ptrdiff_t)0))
 #define MDBX_PGWALK_GC ((const char *)((ptrdiff_t)-1))
 #define MDBX_PGWALK_META ((const char *)((ptrdiff_t)-2))
+#endif
 
 /* Callback function for traverse the b-tree. */
 typedef int
