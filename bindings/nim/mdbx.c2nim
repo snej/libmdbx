@@ -1,7 +1,6 @@
 // Definitions for c2nim to parse CouchbaseLite headers
 
-// To make the file shorter and easier to scan, don't add the comments
-#skipcomments
+//#skipcomments
 
 #assumendef LIBMDBX_EXPORTS
 #assumendef LIBMDBX_IMPORTS
@@ -58,20 +57,20 @@
 #prefix ms_
 
 // Custom struct names:
-#mangle mdbx_version_info   VersionInfo
-#mangle mdbx_version        Version
-#mangle mdbx_build_info     BuildInfo
-#mangle mdbx_build          Build
-#mangle mdbx_canary         Canary
-#mangle MDBX_cursor_op      CursorOp
-#mangle mdbx_page_type_t    PageType
-#mangle mdbx_envinfo        EnvInfo
-#mangle MDBX_txn_info       TxnInfo
+#mangle mdbx_version_info   MDBX_VersionInfo
+#mangle mdbx_version        MDBX_Version
+#mangle mdbx_build_info     MDBX_BuildInfo
+#mangle mdbx_build          MDBX_Build
+#mangle mdbx_canary         MDBX_Canary
+#mangle MDBX_cursor_op      MDBX_CursorOp
+#mangle mdbx_page_type_t    MDBX_PageType
+#mangle mdbx_envinfo        MDBX_EnvInfo
+#mangle MDBX_txn_info       MDBX_TxnInfo
 
 // Custom handle type names:
-#mangle MDBX_cursor         Cursor
-#mangle MDBX_dbi            DBI
-#mangle MDBX_env            Env
-#mangle MDBX_stat           Stat
-#mangle MDBX_txn            Txn
-#mangle MDBX_val            Val
+#mangle MDBX_cursor         MDBX_Cursor
+#mangle MDBX_dbi            MDBX_DBI
+#mangle MDBX_env            MDBX_Env
+#mangle MDBX_stat           MDBX_Stat
+#mangle MDBX_txn            MDBX_Txn
+#mangle MDBX_val            MDBX_Val
