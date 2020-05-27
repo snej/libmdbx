@@ -33,3 +33,4 @@ src/elements/version.c
 src/elements/config.h
 dist/
 *.tar*
+bindings/nim/bin

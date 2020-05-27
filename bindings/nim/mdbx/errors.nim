@@ -1,6 +1,6 @@
 # errors.nim
 
-import mdbx_raw
+import mdbx/private/mdbx_raw
 
 type MDBXErrorCode = enum
     # key/data pair already exists
@@ -115,13 +115,32 @@ type MDBXErrorCode = enum
 
     SUCCESS = 0
 
+    # (This is just to extend the range of MDBXErrorCode to cover positive numbers, e.g. errno codes)
+    MAX_LMDB_RETURN = 0x7FFFFFFF
+
 
 
 type MDBXError* = object of CatchableError
     code*: MDBXErrorCode
 
+type POSIXError* = object of CatchableError
+    errno*: int
+
 proc checkmdbx*(err: cint) =
-    if err != 0: 
-        let x = newException(MDBXError, $strerror(err))
-        x.code = MDBXErrorCode(err)
-        raise x
+    if err != 0:
+        if err < 0:
+            let x = newException(MDBXError, $strerror(err))
+            x.code = MDBXErrorCode(err)
+            raise x
+        else:
+            let x = newException(POSIXError, $strerror(err))
+            x.errno = err
+            raise x
+
+proc checkmdbxfound*(err: cint): bool =
+    if err == 0:
+        return true
+    elif err == cint(NOTFOUND):
+        return false
+    else:
+        checkmdbx err

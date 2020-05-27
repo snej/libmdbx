@@ -6,7 +6,7 @@
 
 SCRIPT_DIR=`dirname $0`
 cd "$SCRIPT_DIR"
-ROOT_DIR="../../"
+ROOT_DIR="../../../.."
 
 # Run the bindings generator, producing `tmp.nim`
 c2nim -o:tmp.nim mdbx.c2nim "$ROOT_DIR/mdbx.h"
