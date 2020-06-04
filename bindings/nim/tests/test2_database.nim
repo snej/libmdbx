@@ -3,7 +3,6 @@
 import mdbx
 import options
 import os
-import sugar
 import unittest
 
 const TestFile = "/tmp/nimdbx_test"
@@ -31,3 +30,10 @@ suite "Database":
         let val = dbi.getString(txn, "key")
         check val.isSome
         check val.get == "hello"
+
+        txn.commit
+
+        env.withTransaction do (txn2: var Transaction):
+            let val2 = dbi.getString(txn2, "key")
+            check val2.isSome
+            check val2.get == "hello"
