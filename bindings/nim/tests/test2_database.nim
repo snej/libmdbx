@@ -10,30 +10,33 @@ const TestFile = "/tmp/nimdbx_test"
 suite "Database":
     var env: Environment
     var txn: Transaction
-    var dbi: Database
+    var dbi: DBI
+    var db:  Database
 
     setup:
         #setDebugLevel(TRACE, {ASSERT, AUDIT})
         os.removeDir(TestFile)
         env = newEnvironment(TestFile, {LIFOReclaim}, maxDatabases = 2)
         txn = env.beginTransaction()
-        dbi = txn.openDatabase("main", {Create})
+        db = txn.openDatabase("main", {Create})
+        dbi = db.id
 
     test "Missing":
-        check dbi.getString(txn, "key").isNone
-        check dbi.getBytes(txn, "key").isNone
-        check get(dbi, txn, "key", proc (bytes: openarray[byte]):int = len(bytes)).isNone
+        check db.getString("key").isNone
+        check db.getBytes("key").isNone
+        check get(db, "key", proc (bytes: openarray[byte]):int = len(bytes)).isNone
 
     test "Set Key":
-        dbi.put(txn, "key", "hello")
+        db.put("key", "hello")
 
-        let val = dbi.getString(txn, "key")
+        let val = db.getString("key")
         check val.isSome
         check val.get == "hello"
 
+        # Commit txn -- after this, db cannot be used anymore.
         txn.commit
 
         env.withTransaction do (txn2: var Transaction):
-            let val2 = dbi.getString(txn2, "key")
+            let val2 = txn2[dbi].getString("key")
             check val2.isSome
             check val2.get == "hello"

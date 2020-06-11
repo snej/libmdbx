@@ -6,11 +6,11 @@ import mdbx/private/mdbx_raw
 type
     TransactionFlag* = enum
         xxPlaceholder   = 0
-        SafeNoSync      = bitflag(0x00010000)
-        ReadOnly        = bitflag(0x00020000)
-        NoMetaSync      = bitflag(0x00040000)
-        MapAsync        = bitflag(0x00100000)
-        TryTransaction  = bitflag(0x10000000)
+        SafeNoSync      = bitflag(0x00010000)   ## Use this sync mode when committing
+        ReadOnly        = bitflag(0x00020000)   ## No writes allowed
+        NoMetaSync      = bitflag(0x00040000)   ## Use this sync mode when committing
+        MapAsync        = bitflag(0x00100000)   ## Use this sync mode when committing
+        TryTransaction  = bitflag(0x10000000)   ## Do not block when starting a write transaction
     TransactionFlags = set[TransactionFlag]
 
     Transaction* = object
@@ -20,6 +20,8 @@ type
         ## hanging around, since there can only be one write Transaction on an Environment at a
         ## time, and only one read-only Transaction per thread.
         handle: ptr MDBX_txn
+
+    TransactionInfo* = MDBX_txn_info
 
 proc `=destroy`(t: var Transaction) =
     # Normally the commit() or abort() methods will have been called by now.
@@ -57,9 +59,18 @@ proc abort*(t: var Transaction) =
 proc flags*(t: Transaction): TransactionFlags =
     cast[TransactionFlags](flags(t.handle))
 
+proc isReadOnly(t: Transaction): bool = t.flags.contains(ReadOnly)
+
 proc environment*(t: Transaction): Environment =
     ## The Environment of this Transaction
     env(t.handle).fromMdbxEnv()
+
+proc info*(t: Transaction, full: bool = false): TransactionInfo =
+    ## Returns information about the Transaction.
+    ## For performance reasons, some values is not computed unless the ``full`` parameter is true:
+    ## * ``txn_reader_lag`` (in a write transaction)
+    ## * ``txn_space_dirty`` (in a read-only transaction)
+    checkmdbx info(t.handle, addr result, full)
 
 # Utilities:
 

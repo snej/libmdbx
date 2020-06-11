@@ -54,16 +54,20 @@ type MoveOp* = enum
     ## Specifies how the ``move`` method should move the Cursor.
     ## NOTE: The ops with "Dup" or "NoDup" in their names only apply to Databases that support
     ## multiple values for a key, i.e. that were created with the ``DupSort`` flag.
-    First     = mdbx_raw.FIRST,      ##  First item in Database
-    FirstDup  = mdbx_raw.FIRST_DUP,  ##  First item of current key
-    Last      = mdbx_raw.LAST,       ##  Last item in Database
-    LastDup   = mdbx_raw.LAST_DUP,   ##  Last item of current key
-    Next      = mdbx_raw.NEXT,       ##  Next item
-    NextDup   = mdbx_raw.NEXT_DUP,   ##  Next item of current key
-    NextNoDup = mdbx_raw.NEXT_NODUP, ##  First item of next key
-    Prev      = mdbx_raw.PREV,       ##  Previous item
-    PrevDup   = mdbx_raw.PREV_DUP,   ##  Previous item of current key
-    PrevNoDup = mdbx_raw.PREV_NODUP, ##  Last item of previous key
+    ## The ops with "Multiple" in their names only apply to Databases created with ``DupFixed``.
+    First       = mdbx_raw.FIRST,        ## First item in Database
+    FirstDup    = mdbx_raw.FIRST_DUP,    ## First item of current key
+    GetMultiple = mxbx_raw.GET_MULTIPLE  ## Get multiple values w/same key at cursor pos
+    Last        = mdbx_raw.LAST,         ## Last item in Database
+    LastDup     = mdbx_raw.LAST_DUP,     ## Last item of current key
+    Next        = mdbx_raw.NEXT,         ## Next item
+    NextDup     = mdbx_raw.NEXT_DUP,     ## Next item of current key
+    NextMultiple= mxbx_raw.NEXT_MULTIPLE ## Get next page of multiple values w/same key
+    NextNoDup   = mdbx_raw.NEXT_NODUP,   ## First item of next key
+    Prev        = mdbx_raw.PREV,         ## Previous item
+    PrevDup     = mdbx_raw.PREV_DUP,     ## Previous item of current key
+    PrevNoDup   = mdbx_raw.PREV_NODUP,   ## Last item of previous key
+    PrevMultiple= mxbx_raw.PREV_MULTIPLE ## Get prev page of multiple values w/same key
 
 proc move*(cursor: var Cursor, op: MoveOp): bool =
     ## Moves the Cursor to the first, last, previous, or next item, according to the given
